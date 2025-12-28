@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>Career Navigator - Advanced</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            padding: 12px 25px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .tab-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        input[type="file"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="number"]:focus,
+        input[type="file"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+        }
+        
+        input[type="file"] {
+            padding: 8px;
+        }
+        
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+            display: none;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+            display: none;
+        }
+        
+        .parsed-data {
+            background: #f5f7fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .parsed-data h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .parsed-data p {
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .skill-tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .plan-preview {
+            background: #f5f7fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .plan-preview h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .milestone {
+            padding: 10px;
+            background: white;
+            border-left: 3px solid #667eea;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        
+        .milestone strong {
+            color: #667eea;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2em;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+        }
+
+        .user-profile {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 20px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-name {
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-email {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .logout-btn {
+            padding: 8px 16px !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 6px !important;
+            cursor: pointer;
+            font-size: 14px !important;
+            font-weight: 600 !important;
+            transition: all 0.3s ease !important;
+            margin: 0 !important;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="user-profile" id="userProfile" style="display: none;">
+            <div class="user-info">
+                <div class="user-name" id="userName"></div>
+                <div class="user-email" id="userEmail"></div>
+            </div>
+            <div class="user-avatar" id="userAvatar"></div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+        
+        <header>
+            <h1>🚀 Advanced Career Navigator</h1>
+            <p>Upload Resume → Get Day-by-Day Plan → Track Progress</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('step1')">Step 1: Upload Resume</button>
+            <button class="tab-btn" onclick="switchTab('step2')">Step 2: Create Plan</button>
+            <button class="tab-btn" onclick="switchTab('step3')">Step 3: Track Progress</button>
+        </div>
+        
+        <!-- Step 1: Upload Resume -->
+        <div id="step1" class="tab-content active">
+            <div class="card">
+                <h2>📄 Upload Your Resume</h2>
+                <p style="color: #666; margin-bottom: 20px;">We'll analyze your skills, experience, and background to create a personalized learning plan.</p>
+                
+                <div class="error-message" id="uploadError"></div>
+                <div class="success-message" id="uploadSuccess"></div>
+                
+                <div class="two-column">
+                    <div style="width:100%;">
+                        <div class="form-group">
+                            <label for="resume">Resume File (.txt or .pdf)</label>
+                            <input type="file" id="resume" accept=".txt,.pdf" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="uploadResume()" style="width: 100%; padding: 15px;">Upload Resume</button>
+                
+                <div class="loading" id="uploadLoading">
+                    <div class="spinner"></div>
+                    <p>Analyzing your resume...</p>
+                </div>
+                
+                <div class="parsed-data" id="parsedDataDisplay" style="display: none;">
+                    <h3>✅ Resume Analyzed Successfully!</h3>
+                    <p><strong>Current Role:</strong> <span id="currentRole"></span></p>
+                    <p><strong>Years of Experience:</strong> <span id="yearsExp"></span></p>
+                    <p><strong>Experience Level:</strong> <span id="expLevel"></span></p>
+                    <p><strong>Education:</strong> <span id="education"></span></p>
+                    <p><strong>Current Skills:</strong></p>
+                    <div id="skillsDisplay"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 2: Create Plan -->
+        <div id="step2" class="tab-content">
+            <div class="card">
+                <h2>📋 Create Your Personalized Learning Plan</h2>
+                <p style="color: #666; margin-bottom: 20px;">Tell us your career goal and we'll generate a detailed day-by-day learning roadmap.</p>
+                
+                <div class="error-message" id="planError"></div>
+                <div class="success-message" id="planSuccess"></div>
+                
+                <div class="form-group">
+                    <label for="goal">Career Goal</label>
+                    <select id="goal" required>
+                        <option value="">Select your goal...</option>
+                        
+                        <optgroup label="🔧 Backend & Full Stack">
+                            <option value="Software Engineer">Software Engineer</option>
+                            <option value="Backend Engineer">Backend Engineer</option>
+                            <option value="Full Stack Developer">Full Stack Developer</option>
+                            <option value="Node.js Developer">Node.js Developer</option>
+                        </optgroup>
+                        
+                        <optgroup label="🎨 Frontend & UI/UX">
+                            <option value="Web Developer">Web Developer</option>
+                            <option value="Frontend Developer">Frontend Developer</option>
+                            <option value="React Developer">React Developer</option>
+                            <option value="UI/UX Developer">UI/UX Developer</option>
+                        </optgroup>
+                        
+                        <optgroup label="📱 Mobile Development">
+                            <option value="Mobile Developer">Mobile Developer</option>
+                            <option value="iOS Developer">iOS Developer</option>
+                            <option value="Android Developer">Android Developer</option>
+                            <option value="React Native Developer">React Native Developer</option>
+                        </optgroup>
+                        
+                        <optgroup label="🤖 AI & Machine Learning">
+                            <option value="AI Engineer">AI Engineer</option>
+                            <option value="Machine Learning Engineer">Machine Learning Engineer</option>
+                            <option value="Data Scientist">Data Scientist</option>
+                            <option value="NLP Engineer">NLP Engineer</option>
+                            <option value="Computer Vision Engineer">Computer Vision Engineer</option>
+                        </optgroup>
+                        
+                        <optgroup label="☁️ Cloud & DevOps">
+                            <option value="Cloud Engineer">Cloud Engineer</option>
+                            <option value="DevOps Engineer">DevOps Engineer</option>
+                            <option value="AWS Specialist">AWS Specialist</option>
+                            <option value="Kubernetes Specialist">Kubernetes Specialist</option>
+                            <option value="Infrastructure Engineer">Infrastructure Engineer</option>
+                        </optgroup>
+                        
+                        <optgroup label="🔐 Security & Systems">
+                            <option value="Security Engineer">Security Engineer</option>
+                            <option value="Cybersecurity Specialist">Cybersecurity Specialist</option>
+                            <option value="Systems Administrator">Systems Administrator</option>
+                            <option value="Network Engineer">Network Engineer</option>
+                            <option value="Penetration Tester">Penetration Tester</option>
+                        </optgroup>
+                        
+                        <optgroup label="📊 Data & Analytics">
+                            <option value="Data Analyst">Data Analyst</option>
+                            <option value="Data Engineer">Data Engineer</option>
+                            <option value="Big Data Engineer">Big Data Engineer</option>
+                            <option value="Analytics Engineer">Analytics Engineer</option>
+                            <option value="Business Analyst">Business Analyst</option>
+                        </optgroup>
+                        
+                        <optgroup label="🎮 Game Development">
+                            <option value="Game Developer">Game Developer</option>
+                            <option value="Unity Developer">Unity Developer</option>
+                            <option value="Unreal Engine Developer">Unreal Engine Developer</option>
+                            <option value="Game Server Developer">Game Server Developer</option>
+                        </optgroup>
+                        
+                        <optgroup label="💾 Databases & Storage">
+                            <option value="Database Administrator">Database Administrator</option>
+                            <option value="Database Developer">Database Developer</option>
+                            <option value="SQL Specialist">SQL Specialist</option>
+                            <option value="NoSQL Specialist">NoSQL Specialist</option>
+                        </optgroup>
+                        
+                        <optgroup label="🏗️ Architecture & Design">
+                            <option value="Software Architect">Software Architect</option>
+                            <option value="Solution Architect">Solution Architect</option>
+                            <option value="System Designer">System Designer</option>
+                            <option value="Technical Lead">Technical Lead</option>
+                        </optgroup>
+                        
+                        <optgroup label="🧪 Testing & QA">
+                            <option value="QA Engineer">QA Engineer</option>
+                            <option value="Automation Test Engineer">Automation Test Engineer</option>
+                            <option value="QA Automation Specialist">QA Automation Specialist</option>
+                            <option value="Performance Tester">Performance Tester</option>
+                        </optgroup>
+                        
+                        <optgroup label="📚 Education & Management">
+                            <option value="Teacher">Teacher</option>
+                            <option value="Professor">Professor</option>
+                            <option value="Business Manager">Business Manager</option>
+                            <option value="Business Analyst">Business Analyst</option>
+                            <option value="Project Manager">Project Manager</option>
+                        </optgroup>
+                        
+                        <optgroup label="🔧 Other Specializations">
+                            <option value="Embedded Systems Engineer">Embedded Systems Engineer</option>
+                            <option value="IoT Developer">IoT Developer</option>
+                            <option value="Blockchain Developer">Blockchain Developer</option>
+                            <option value="Product Manager">Product Manager</option>
+                            <option value="Technical Writer">Technical Writer</option>
+                            <option value="Developer Advocate">Developer Advocate</option>
+                        </optgroup>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="duration">Duration (Months)</label>
+                    <input type="number" id="duration" min="1" max="12" value="6" required aria-label="Duration in months" aria-required="true" inputmode="numeric" style="padding:8px; border-radius:6px; border:1px solid #dfe6f3; width:110px;">
+                </div>
+                
+                <button onclick="createPlan()" style="width: 100%; padding: 15px;">Generate Day-by-Day Plan</button>
+                
+                <div class="loading" id="planLoading">
+                    <div class="spinner"></div>
+                    <p>Generating your personalized plan...</p>
+                </div>
+                
+                <div class="plan-preview" id="planPreview" style="display: none;">
+                    <h3>📅 Your Learning Plan</h3>
+                    <p><strong>Goal:</strong> <span id="planGoal"></span></p>
+                    <p><strong>Duration:</strong> <span id="planDuration"></span> months — <span id="planDurationFormatted"></span></p>
+                    <p><strong>Total Daily Tasks:</strong> <span id="totalTasks"></span></p>
+                    
+                    <h4 style="margin-top: 20px; color: #667eea;">🎯 Key Milestones</h4>
+                    <div id="milestonesDisplay"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 3: Track Progress -->
+        <div id="step3" class="tab-content">
+            <div class="card">
+                <h2>📊 Track Your Progress</h2>
+                <p style="color: #666; margin-bottom: 20px;">Monitor your learning journey with daily updates and insights.</p>
+                <div style="margin-bottom:12px; display:flex; gap:10px; align-items:center;">
+                    <button onclick="sendTestEmail()" style="background:#22c55e; padding:8px 14px; border-radius:6px; color:#fff; font-weight:600; border:none; cursor:pointer;">Send Test Email</button>
+                    <div id="emailStatus" style="color:#333; font-size:14px;"></div>
+                </div>
+                
+                <!-- Tech Update Alert -->
+                <div id="techUpdateAlert" style="background: #fff3cd; border: 1px solid #ffc107; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none;">
+                    <h3 style="margin-top: 0; color: #856404;">⚡ New Technologies Detected!</h3>
+                    <p>New industry-standard technologies have emerged for <strong id="updateProfession"></strong></p>
+                    <p>Your learning plan can be updated to include:</p>
+                    <ul id="newTechList" style="margin-bottom: 10px;"></ul>
+                    <button onclick="acceptTechUpdate()" style="background: #ffc107; color: #333; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 10px;">Update My Plan</button>
+                    <button onclick="dismissTechUpdate()" style="background: transparent; border: 1px solid #856404; color: #856404; padding: 10px 20px; border-radius: 4px; cursor: pointer;">Dismiss</button>
+                </div>
+                
+                <div id="progressPlaceholder" style="text-align: center; color: #999; padding: 40px;">
+                    <p>Create a plan first to start tracking your progress!</p>
+                </div>
+                
+                <div id="progressDisplay" style="display: none;">
+                    <div style="background: #e7f3ff; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h3 style="color: #667eea; margin-bottom: 10px;">Overall Progress</h3>
+                        <div style="background: white; height: 30px; border-radius: 15px; overflow: hidden;">
+                            <div id="progressBar" style="background: linear-gradient(90deg, #667eea, #764ba2); height: 100%; width: 0%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <p style="margin-top: 10px; color: #333;"><span id="progressPercentage">0</span>% Complete</p>
+                    </div>
+                    
+                    <h3 style="margin-top: 30px; margin-bottom: 15px; color: #333;">Recent Tasks</h3>
+                    <div id="tasksDisplay"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentResumeId = null;
+        let currentPlanId = null;
+
+        function computeFormattedDuration(months) {
+            const m = Number(months) || 0;
+            const weeks = Math.round(m * 4.345);
+            const years = m / 12;
+            const yearsStr = (Math.abs(years - Math.round(years)) < 1e-9) ? String(Math.round(years)) : years.toFixed(2).replace(/\.00$/, '');
+            const monthLabel = m === 1 ? 'month' : 'months';
+            return `${m} ${monthLabel} (≈${weeks} weeks, ${yearsStr} years)`;
+        }
+
+        
+
+        // Initialize duration display and wire up changes
+        document.addEventListener('DOMContentLoaded', () => {
+            const durationInput = document.getElementById('duration');
+            if (durationInput) {
+                const initialHuman = computeFormattedDuration(durationInput.value);
+                durationInput.title = initialHuman;
+
+                durationInput.addEventListener('input', () => {
+                    const months = parseInt(durationInput.value) || 0;
+                    const humanStr = computeFormattedDuration(months);
+                    durationInput.title = humanStr;
+                });
+            }
+        });
+        
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Deactivate all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Activate button
+            event.target.classList.add('active');
+            
+            // Load progress data if switching to step 3
+            if (tabName === 'step3' && currentPlanId) {
+                loadProgressData();
+            }
+        }
+        
+        function uploadResume() {
+            const resumeFile = document.getElementById('resume').files[0];
+
+            if (!resumeFile) {
+                showError('uploadError', 'Please select a resume file');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('resume', resumeFile);
+
+            document.getElementById('uploadLoading').style.display = 'block';
+            
+            const token = getCsrfToken();
+            console.log('uploadResume - CSRF Token:', token ? 'Present' : 'Missing');
+
+            fetch('/api/upload-resume', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRFToken': token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('uploadLoading').style.display = 'none';
+
+                if (data.success) {
+                    currentResumeId = data.resume_id;
+
+                    // Display parsed data
+                    const parsed = data.parsed_data;
+                    document.getElementById('currentRole').textContent = parsed.current_role || 'Not specified';
+                    document.getElementById('yearsExp').textContent = parsed.years_of_experience + ' years';
+                    document.getElementById('expLevel').textContent = parsed.experience_level;
+                    document.getElementById('education').textContent = parsed.education;
+
+                    let skillsHTML = '';
+                    parsed.skills.forEach(skill => {
+                        skillsHTML += `<span class="skill-tag">${skill}</span>`;
+                    });
+                    document.getElementById('skillsDisplay').innerHTML = skillsHTML;
+
+                    document.getElementById('parsedDataDisplay').style.display = 'block';
+                    showSuccess('uploadSuccess', 'Resume uploaded successfully! Move to Step 2');
+                } else {
+                    showError('uploadError', data.error || 'Upload failed');
+                }
+            })
+            .catch(error => {
+                document.getElementById('uploadLoading').style.display = 'none';
+                console.error('Upload error:', error);
+                showError('uploadError', error.message);
+            });
+        }
+        
+        function createPlan() {
+            const goal = document.getElementById('goal').value;
+            const duration = document.getElementById('duration').value;
+            
+            if (!goal) {
+                showError('planError', 'Please select a career goal');
+                return;
+            }
+            
+            if (!currentResumeId) {
+                showError('planError', 'Please upload your resume first!');
+                return;
+            }
+            
+            document.getElementById('planLoading').style.display = 'block';
+            
+            const token = getCsrfToken();
+            console.log('createPlan - CSRF Token:', token ? 'Present' : 'Missing');
+            
+            fetch('/api/create-plan', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': token
+                },
+                body: JSON.stringify({
+                    resume_id: currentResumeId,
+                    goal: goal,
+                    duration_months: parseInt(duration)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('planLoading').style.display = 'none';
+                
+                if (data.success) {
+                    currentPlanId = data.plan_id;
+                    const plan = data.plan_data;
+                    
+                    document.getElementById('planGoal').textContent = plan.goal;
+                    document.getElementById('planDuration').textContent = plan.duration_months;
+                    document.getElementById('planDurationFormatted').textContent = computeFormattedDuration(plan.duration_months);
+                    document.getElementById('totalTasks').textContent = plan.total_tasks;
+                    
+                    let milestonesHTML = '';
+                    plan.milestones.forEach(m => {
+                        milestonesHTML += `<div class="milestone"><strong>Week ${m.week}:</strong> ${m.milestone}</div>`;
+                    });
+                    document.getElementById('milestonesDisplay').innerHTML = milestonesHTML;
+                    
+                    document.getElementById('planPreview').style.display = 'block';
+                    showSuccess('planSuccess', 'Plan created successfully! Duration: ' + computeFormattedDuration(plan.duration_months) + '. Move to Step 3 to track progress');
+                } else {
+                    showError('planError', data.error || 'Failed to create plan');
+                }
+            })
+            .catch(error => {
+                document.getElementById('planLoading').style.display = 'none';
+                console.error('Create plan error:', error);
+                showError('planError', error.message);
+            });
+        }
+        
+        function loadProgressData() {
+            if (!currentPlanId) return;
+            
+            // First check for tech updates
+            checkForTechUpdates();
+            
+            fetch(`/api/plan/${currentPlanId}`, { credentials: 'same-origin' })
+            .then(response => response.json())
+            .then(data => {
+                const plan = data.plan;
+                const tasks = data.daily_tasks;
+                
+                // Update progress bar
+                document.getElementById('progressPercentage').textContent = Math.round(plan.completion_percentage);
+                document.getElementById('progressBar').style.width = plan.completion_percentage + '%';
+                
+                // Display tasks
+                let tasksHTML = '';
+                tasks.forEach(task => {
+                    const checked = task.completed ? 'checked' : '';
+                    const completedClass = task.completed ? 'style="opacity: 0.6; text-decoration: line-through;"' : '';
+                    
+                    tasksHTML += `
+                        <div style="background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 3px solid ${task.completed ? '#28a745' : '#667eea'};">
+                            <div style="display: flex; gap: 15px; align-items: flex-start;">
+                                <input type="checkbox" ${checked} onchange="toggleTask(${task.id}, this.checked)" style="width: 20px; height: 20px; cursor: pointer; margin-top: 3px;">
+                                <div style="flex: 1;">
+                                    <p ${completedClass}><strong>Day ${task.day}:</strong> ${task.task}</p>
+                                    <p style="font-size: 13px; color: #999; margin-bottom: 8px;">📅 ${new Date(task.date).toLocaleDateString()}</p>
+                                    <div style="display: ${task.completed ? 'block' : 'none'}; background: #f5f5f5; padding: 10px; border-radius: 4px;" id="taskDetails${task.id}">
+                                        <label>Hours spent: <input type="number" step="0.5" min="0" max="12" value="${task.hours_spent}" onchange="updateTaskDetails(${task.id})" style="width: 60px; padding: 4px;"></label>
+                                        <br><br>
+                                        <label>Notes:</label>
+                                        <textarea id="notes${task.id}" onchange="updateTaskDetails(${task.id})" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd; font-family: Arial;" rows="2">${task.notes || ''}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('tasksDisplay').innerHTML = tasksHTML;
+                document.getElementById('progressPlaceholder').style.display = 'none';
+                document.getElementById('progressDisplay').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error loading progress:', error);
+            });
+        }
+        
+        function checkForTechUpdates() {
+            if (!currentPlanId) return;
+            
+            fetch(`/api/check-tech-updates/${currentPlanId}`, { credentials: 'same-origin' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.should_update && data.new_technologies && data.new_technologies.length > 0) {
+                    // Show tech update alert
+                    document.getElementById('updateProfession').textContent = data.reason;
+                    
+                    let techList = '';
+                    data.new_technologies.forEach(tech => {
+                        techList += `<li><strong>${tech.name}</strong> (${tech.category}) - Relevance: ${tech.relevance}%</li>`;
+                    });
+                    document.getElementById('newTechList').innerHTML = techList;
+                    
+                    document.getElementById('techUpdateAlert').style.display = 'block';
+                    
+                    // Store update data for later
+                    window.pendingTechUpdate = data.new_technologies;
+                }
+            })
+            .catch(error => console.error('Error checking tech updates:', error));
+        }
+        
+        function acceptTechUpdate() {
+            if (!currentPlanId || !window.pendingTechUpdate) return;
+            
+            const token = getCsrfToken();
+            
+            // Get current technologies and add new ones
+            fetch(`/api/tech-recommendations/${currentPlanId}`, { credentials: 'same-origin' })
+            .then(response => response.json())
+            .then(data => {
+                // Combine recommendations with new tech
+                const updatedTechs = window.pendingTechUpdate.map(t => t.name);
+                
+                // Update plan with new technologies
+                return fetch(`/api/update-plan-tech/${currentPlanId}`, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': token
+                    },
+                    body: JSON.stringify({
+                        technologies: updatedTechs
+                    })
+                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('planSuccess', `✅ Plan updated! Added ${data.changes.added_count} new technologies`);
+                    document.getElementById('techUpdateAlert').style.display = 'none';
+                    window.pendingTechUpdate = null;
+                }
+            })
+            .catch(error => {
+                console.error('Error updating plan:', error);
+                showError('planError', 'Failed to update plan with new technologies');
+            });
+        }
+        
+        function dismissTechUpdate() {
+            document.getElementById('techUpdateAlert').style.display = 'none';
+            window.pendingTechUpdate = null;
+        }
+        
+        function toggleTask(taskId, isCompleted) {
+            const taskDetails = document.getElementById(`taskDetails${taskId}`);
+            if (isCompleted) {
+                taskDetails.style.display = 'block';
+            } else {
+                taskDetails.style.display = 'none';
+            }
+            
+            const token = getCsrfToken();
+            
+            // Save to backend
+            fetch(`/api/update-progress/${taskId}`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': token
+                },
+                body: JSON.stringify({
+                    is_completed: isCompleted,
+                    hours_spent: isCompleted ? parseFloat(document.querySelector(`#taskDetails${taskId} input`).value) || 0 : 0,
+                    notes: isCompleted ? (document.getElementById(`notes${taskId}`) ? document.getElementById(`notes${taskId}`).value : '') : ''
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update progress bar
+                    document.getElementById('progressPercentage').textContent = Math.round(data.completion_percentage);
+                    document.getElementById('progressBar').style.width = data.completion_percentage + '%';
+                }
+            })
+            .catch(error => console.error('Error updating task:', error));
+        }
+        
+        function updateTaskDetails(taskId) {
+            const hoursSpent = parseFloat(document.querySelector(`#taskDetails${taskId} input`).value) || 0;
+            const notes = document.getElementById(`notes${taskId}`).value;
+            
+            const token = getCsrfToken();
+            
+            fetch(`/api/update-progress/${taskId}`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': token
+                },
+                body: JSON.stringify({
+                    is_completed: true,
+                    hours_spent: hoursSpent,
+                    notes: notes
+                })
+            })
+            .then(response => response.json())
+            .catch(error => console.error('Error updating details:', error));
+        }
+        
+        function showSuccess(elementId, message) {
+            const elem = document.getElementById(elementId);
+            elem.textContent = message;
+            elem.style.display = 'block';
+            setTimeout(() => {
+                elem.style.display = 'none';
+            }, 5000);
+        }
+        
+        function showError(elementId, message) {
+            const elem = document.getElementById(elementId);
+            elem.textContent = message;
+            elem.style.display = 'block';
+        }
+
+        // Send a test email to the logged-in user
+        function sendTestEmail() {
+            const statusElem = document.getElementById('emailStatus');
+            statusElem.textContent = 'Sending test email...';
+            const token = getCsrfToken();
+
+            fetch('/api/send-test-email', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': token
+                }
+            })
+            .then(async response => {
+                const data = await response.json().catch(() => ({}));
+                if (response.ok && data.success) {
+                    statusElem.style.color = '#166534';
+                    statusElem.textContent = data.message || 'Test email sent (check inbox)';
+                    showSuccess('planSuccess', data.message || 'Test email sent');
+                } else {
+                    statusElem.style.color = '#9b1c1c';
+                    statusElem.textContent = data.error || 'Failed to send test email';
+                    showError('planError', data.error || 'Failed to send test email');
+                }
+            })
+            .catch(err => {
+                statusElem.style.color = '#9b1c1c';
+                statusElem.textContent = 'Network error sending test email';
+                showError('planError', 'Network error sending test email');
+                console.error('sendTestEmail error:', err);
+            });
+        }
+
+        // Display logged-in user info
+        function displayUserInfo() {
+            // This will be called after authentication is verified
+            const userProfile = document.getElementById('userProfile');
+            userProfile.style.display = 'flex';
+            
+            // Get user info from Flask's current_user (via API call or template variable)
+            fetch('/api/user-info', { credentials: 'same-origin' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('userName').textContent = data.name;
+                    document.getElementById('userEmail').textContent = data.email;
+                    // Generate avatar initials
+                    const initials = data.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                    document.getElementById('userAvatar').textContent = initials;
+                }
+            })
+            .catch(error => console.error('Error fetching user info:', error));
+        }
+
+        function logout() {
+            window.location.href = '/logout';
+        }
+
+        // Get CSRF token from meta tag
+        let csrfToken = null;
+        
+        function getCsrfToken() {
+            if (!csrfToken) {
+                csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                if (!csrfToken) {
+                    console.warn('CSRF token not found in meta tag');
+                }
+            }
+            return csrfToken || '';
+        }
+
+        window.addEventListener('load', function() {
+            csrfToken = getCsrfToken();
+            console.log('CSRF Token loaded:', csrfToken ? 'Present' : 'Missing');
+            displayUserInfo();
+        });
+    </script>
+</body>
+</html>
